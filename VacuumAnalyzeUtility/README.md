@@ -22,15 +22,15 @@ There are some other parameters that will get generated automatically if you did
 | -P       | password for the redshift user                                                             | use pgpass file |
 | -p       | RedShift Port                                                                              | 5439            |
 | -d       | Database name                                                                              |                 |
-| -s       | Schema name to vaccum/analyze, for multiple schemas then use comma (eg: 'schema1,schema2') | ALL             |
-| -t       | Table name to vaccum/analyze, for multiple tables then use comma (eg: 'table1,table2')     | ALL             |
-| -b       | Blacklisted tables, these tables will be ignored from the vaccum/analyze                   | Nothing         |
-| -k       | Blacklisted schemas, these schemas will be ignored from the vaccum/analyze                 | Nothing         |
+| -s       | Schema name to vacuum/analyze, for multiple schemas then use comma (eg: 'schema1,schema2') | ALL             |
+| -t       | Table name to vacuum/analyze, for multiple tables then use comma (eg: 'table1,table2')     | ALL             |
+| -b       | Blacklisted tables, these tables will be ignored from the vacuum/analyze                   | Nothing         |
+| -k       | Blacklisted schemas, these schemas will be ignored from the vacuum/analyze                 | Nothing         |
 | -w       | WLM slot count to allocate limited memory                                                  | 1               |
-| -q       | querygroup for the vaccum/analyze, Default=default (for now I didn't use this in script)   | default         |
+| -q       | querygroup for the vacuum/analyze, Default=default (for now I didn't use this in script)   | default         |
 | -a       | Perform analyze or not [Binary value, if 1 then Perform 0 means don't Perform]             | 1               |
 | -r       | set analyze_threshold_percent                                                              | 5               |
-| -v       | Perform vaccum or not [Binary value, if 1 then Perform 0 means don't Perform]              | 1               |
+| -v       | Perform vacuum or not [Binary value, if 1 then Perform 0 means don't Perform]              | 1               |
 | -o       | vacuum options [FULL, SORT ONLY, DELETE ONLY, REINDEX ]                                    | SORT ONLY       |
 | -c       | vacuum threshold percentage                                                                | 80              |
 | -x       | fitler the tables based on unsorted rows from svv_table_info                               | 10              |
