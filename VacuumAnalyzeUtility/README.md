@@ -1,6 +1,6 @@
 # Vacuum Analyze Utility
 
-A shell script based Utility to manage the RedShift vacuum and analyze with more efficient and easy. Its inspired by the AnalyzeVacuumUtilty from AWS community based python utility.
+A shell script based Utility to manage the RedShift vacuum and analyze with more efficient and easy. Its inspired by the [AnalyzeVacuumUtilty from AWS community](https://github.com/awslabs/amazon-redshift-utils/tree/master/src/AnalyzeVacuumUtility) based python utility.
 
 **Get more Updates on this from my blog:** https://thedataguy.in/automate-redshift-vacuum-analyze-using-shell-script-utility/
 
