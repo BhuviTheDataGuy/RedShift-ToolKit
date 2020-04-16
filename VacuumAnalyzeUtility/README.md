@@ -33,8 +33,8 @@ There are some other parameters that will get generated automatically if you did
 | -v       | Perform vacuum or not [Binary value, if 1 then Perform 0 means don't Perform]              | 1               |
 | -o       | vacuum options [FULL, SORT ONLY, DELETE ONLY, REINDEX ]                                    | SORT ONLY       |
 | -c       | vacuum threshold percentage                                                                | 80              |
-| -x       | fitler the tables based on unsorted rows from svv_table_info                               | 10              |
-| -f       | fitler the tables based on stats_off from svv_table_info                                   | 10              |
+| -x       | Filter the tables based on unsorted rows from svv_table_info                               | 10              |
+| -f       | Filter the tables based on stats_off from svv_table_info                                   | 10              |
 | -z       | DRY RUN - just print the vacuum and analyze queries on the screen [1 Yes, 0 No]            | 0               |
 
 ## Installation:
