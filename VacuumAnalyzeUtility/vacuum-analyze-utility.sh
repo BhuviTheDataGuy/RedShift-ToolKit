@@ -140,13 +140,32 @@ schema=$(echo $schema | sed "s/\([^,]*\)/\'&\'/g")
 fi	
 
 
-# Get the list of tables for vacuum/analyze
-echo `date '+%Y-%m-%d %H:%M:%S'` "Getting the list of Tables"
+# Get the list of tables for analyze
+echo `date '+%Y-%m-%d %H:%M:%S'` "Getting the list of Tables for analyze"
 if [[ $tables == 'unset' ]]
 then
 	if [[ $blacklisttables == 'unset' ]]
 	then
-	get_tables=$(psql -h  $host -U $user -p $port -d $database -t -c"select \"table\" from svv_table_info where unsorted > $unsortpct and stats_off >= $statsoffpct and vacuum_sort_benefit is not null;" )
+	analyze_get_tables=$(psql -h  $host -U $user -p $port -d $database -t -c"select \"table\" from svv_table_info where  stats_off >= $statsoffpct and \"schema\" in ($schema);" )
+	analyze_tables=$(echo $analyze_get_tables | sed "s/\([^ ]*\)/\'&\'/g"| sed 's/ /,/g')
+	else	
+	blacklisttables=$(echo $blacklisttables | sed "s/\([^,]*\)/\'&\'/g")	
+	analyze_get_tables=$(psql -h  $host -U $user -p $port -d $database -t -c"select \"table\" from svv_table_info where \"table\" not in ($blacklisttables) and \"schema\" in ($schema) and stats_off >= $statsoffpct;" )
+	analyze_tables=$(echo $analyze_get_tables | sed "s/\([^ ]*\)/\'&\'/g"| sed 's/ /,/g')
+
+fi
+else
+analyze_tables=$(echo $tables | sed "s/\([^,]*\)/\'&\'/g")
+fi	
+
+
+# Get the list of tables for vacuum
+echo `date '+%Y-%m-%d %H:%M:%S'` "Getting the list of Tables for vacuum"
+if [[ $tables == 'unset' ]]
+then
+	if [[ $blacklisttables == 'unset' ]]
+	then
+	get_tables=$(psql -h  $host -U $user -p $port -d $database -t -c"select \"table\" from svv_table_info where  \"schema\" in ($schema) and unsorted > $unsortpct and stats_off >= $statsoffpct and vacuum_sort_benefit is not null;" )
 	tables=$(echo $get_tables | sed "s/\([^ ]*\)/\'&\'/g"| sed 's/ /,/g')
 	else	
 	blacklisttables=$(echo $blacklisttables | sed "s/\([^,]*\)/\'&\'/g")	
@@ -167,11 +186,7 @@ else
 	vacuum=$vacuum
 fi
 
-if [[ $vacuumoption == 'unset' ]]
-	then vacuumoption='SORT ONLY'
-else
-	vacuumoption=$vacuumoption
-fi
+
 
 if [[ $vacuumpercent == 'unset' ]]
 then vacuumpercent=100
@@ -205,6 +220,12 @@ then
 	wlmslot=1
 else
 	wlmslot=$wlmslot
+fi
+
+if [[ $vacuumoption == 'unset' ]]
+	then vacuumoption='SORT ONLY'
+else
+	vacuumoption=$vacuumoption
 fi
 
 ## Auto vacuum option based on day
@@ -248,7 +269,7 @@ fi
 #If the user set 1 for analyze then start analyze
 if [[ $analyze == 1 ]]
 then 
-generate_analyze_query=$(psql -h $host -U $user -p $port -d $database -t -c"select 'analyze '||\"schema\"||'.'||\"table\"||';' from svv_table_info where \"schema\" in ($schema) and \"table\" in ($tables)";)
+generate_analyze_query=$(psql -h $host -U $user -p $port -d $database -t -c"select 'analyze '||\"schema\"||'.'||\"table\"||';' from svv_table_info where \"schema\" in ($schema) and \"table\" in ($analyze_tables)";)
 if [ $dryrun == 1 ]
 then	
 echo ""
