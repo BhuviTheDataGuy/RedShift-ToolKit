@@ -146,11 +146,11 @@ if [[ $tables == 'unset' ]]
 then
 	if [[ $blacklisttables == 'unset' ]]
 	then
-	analyze_get_tables=$(psql -h  $host -U $user -p $port -d $database -t -c"select \"table\" from svv_table_info where  stats_off >= $statsoffpct and \"schema\" in ($schema);" )
+	analyze_get_tables=$(psql -h  $host -U $user -p $port -d $database -t -c"select \"table\" from svv_table_info where stats_off>0 and stats_off > $statsoffpct and \"schema\" in ($schema);" )
 	analyze_tables=$(echo $analyze_get_tables | sed "s/\([^ ]*\)/\'&\'/g"| sed 's/ /,/g')
 	else	
 	blacklisttables=$(echo $blacklisttables | sed "s/\([^,]*\)/\'&\'/g")	
-	analyze_get_tables=$(psql -h  $host -U $user -p $port -d $database -t -c"select \"table\" from svv_table_info where \"table\" not in ($blacklisttables) and \"schema\" in ($schema) and stats_off >= $statsoffpct;" )
+	analyze_get_tables=$(psql -h  $host -U $user -p $port -d $database -t -c"select \"table\" from svv_table_info where \"table\" not in ($blacklisttables) and \"schema\" in ($schema) and stats_off>0 stats_off > $statsoffpct;" )
 	analyze_tables=$(echo $analyze_get_tables | sed "s/\([^ ]*\)/\'&\'/g"| sed 's/ /,/g')
 
 fi
