@@ -97,4 +97,4 @@ Do a dry run (generate SQL queries) for both vacuum and analyze for the table tb
 ## Change Log
 
 * 2020-04-16 - Released the first version
-* 2020-05-13 - Fixed bug (#3) Imporved analyze tables filter 
+* 2020-05-13 - Fixed bug [(#3)](https://github.com/BhuviTheDataGuy/RedShift-ToolKit/issues/3) Imporved analyze tables filter 
