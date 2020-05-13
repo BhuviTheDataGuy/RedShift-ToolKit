@@ -93,3 +93,8 @@ Do a dry run (generate SQL queries) for both vacuum and analyze for the table tb
 ```
 ./vacuum-analyze-utility.sh -h endpoint -u bhuvi -d dev -t tbl3 -z 1
 ```
+
+## Change Log
+
+* 2020-04-16 - Released the first version
+* 2020-05-13 - Fixed bug (#3) Imporved analyze tables filter 
