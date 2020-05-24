@@ -337,7 +337,7 @@ INSERT INTO rstk_metric_result
    FROM   pg_catalog.svv_table_info 
    join   cte 
    ON     svv_table_info.table_id= cte.table_id 
-   WHERE  cte.eventtime1< current_date - interval '5 day';
+   WHERE  cte.eventtime1>= current_date - interval '5 day';
 
 -- Tables with tombstone blocks
 INSERT INTO rstk_metric_result 
