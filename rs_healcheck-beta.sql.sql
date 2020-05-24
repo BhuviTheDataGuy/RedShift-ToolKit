@@ -836,6 +836,7 @@ FROM   (SELECT checkid,
                                               || value 
                                               || 
 ' queues, not bad. But make sure it should to eat much resources. For a generic workload 2 to 3 queues will work fine.'
+  WHEN Cast(value AS INT) =0 then 'You are using Auto WLM, so this check is not applicable'
   ELSE 'Unknown' 
 END AS details, 
 CASE 
@@ -885,6 +886,7 @@ FROM   (SELECT checkid,
                                     || value 
                                     || 
 ' which is very less, it may allocate more resource per slot, but many sessions will go to waiting state iin the queue. Optimal value is 15 to 20'
+  WHEN value IS NULL then 'You are using Auto WLM, so this check is not applicable'
   ELSE 'Unknown' 
 END AS details, 
 CASE 
@@ -1196,7 +1198,8 @@ FROM   (SELECT checkid,
                                                    || value 
                                                    || 
 ' disk based queries, Its a less count, but Disk based queries can spill your disk too quickly and gives bad performance. WLM setting can also help you to fix this'
-  WHEN Cast(value AS INT) = 0 THEN 'Awesome!!! No disk based quries' 
+  WHEN Cast(value AS INT) between 1 and 300 THEN 'Not much disk based quries. You have '||value||' quries only' 
+  WHEN Cast(value AS INT) then 'Awesome!!! No disk based quries'
   ELSE 'Unknown' 
 END AS details, 
 CASE 
@@ -1265,25 +1268,29 @@ WHERE  rstk_metric_result.checkid = sq.checkid;
 UPDATE rstk_metric_result 
 SET    details = sq.details, 
        priority = sq.priority 
-FROM   (SELECT checkid, 
-               'We found that ' 
-               || value 
-               || 
-' events are occuring too many times (more then 500 times), Its better to take a look at the tables who has these alerts and tune then'
-                     details, 
-(SELECT Count(event) 
- FROM   (SELECT Trim(Split_part(event, ':', 1)) AS event, 
-                Count(*) 
-         FROM   stl_alert_event_log 
-         GROUP  BY 1) 
- WHERE  count > 500) AS count, 
-CASE 
-  WHEN Cast(count AS INT) > 10 THEN 1 
-  WHEN Cast(count AS INT) BETWEEN 5 AND 10 THEN 2 
-  WHEN Cast(count AS INT) < 5 THEN 3 
-END                  AS priority 
- FROM   rstk_metric_result 
- WHERE  checkid = 26) sq 
+from   ( 
+              SELECT checkid, 
+                     CASE 
+                            WHEN cast(value AS INT) IS NOT NULL THEN 'We found that ' 
+                                          || value 
+                                          ||' events are occuring too many times (more then 500 times), Its better to take a look at the tables who has these alerts and tune'
+                            ELSE 'You do not have much alerts on alert table' 
+                     END AS details, 
+                     ( 
+                            SELECT count(event) 
+                            FROM   ( 
+                                            SELECT   trim(split_part(event, ':', 1)) AS event, 
+                                                     count(*) 
+                                            FROM     stl_alert_event_log 
+                                            GROUP BY 1) 
+                            WHERE  count > 500) AS count, 
+                     CASE 
+                            WHEN cast(count AS INT) > 10 THEN 1 
+                            WHEN cast(count AS INT) BETWEEN 5 AND    10 THEN 2 
+                            WHEN cast(count AS INT) < 5 THEN 3 
+                     END AS priority 
+              FROM   rstk_metric_result 
+              WHERE  checkid = 26) sq 
 WHERE  rstk_metric_result.checkid = sq.checkid; 
 
 -- 	Long running queries (> 30mins)
