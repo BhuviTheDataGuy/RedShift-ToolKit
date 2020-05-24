@@ -1,3 +1,8 @@
+-- RedShift HealthCheck ToolKit
+-- Version 0.1
+-- Developed by Bhuvanesh (@bhuvithedataguy)
+-- Updates: https://thedataguy.in/
+
 -- Drop the temp table for storing the checklist results
 DROP TABLE IF EXISTS rstk_metric_result;
 DROP TABLE IF EXISTS rstk_wlm_max_hit;
