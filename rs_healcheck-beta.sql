@@ -908,7 +908,7 @@ FROM   (SELECT checkid,
                  'We found recently the commit was in the waiting queue for ' 
                  || value 
                  || 
-' seconds, may reasons for this, but an optimized WLM will make this process much better' 
+' seconds, many reasons for this, but an optimized WLM will make this process much better' 
   WHEN Cast(value AS INT) BETWEEN 60 AND 120 THEN 
   'We found recently the commit was in the waiting queue for ' 
   || value 
