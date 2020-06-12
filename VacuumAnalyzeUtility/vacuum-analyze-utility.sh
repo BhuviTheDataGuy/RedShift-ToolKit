@@ -165,11 +165,11 @@ if [[ $tables == 'unset' ]]
 then
 	if [[ $blacklisttables == 'unset' ]]
 	then
-	get_tables=$(psql -h  $host -U $user -p $port -d $database -t -c"select \"table\" from svv_table_info where  \"schema\" in ($schema) and unsorted >= $unsortpct and (stats_off IS NULL or stats_off >= $statsoffpct);" )
+	get_tables=$(psql -h  $host -U $user -p $port -d $database -t -c"select \"table\" from svv_table_info where  \"schema\" in ($schema) and (unsorted IS NULL or unsorted >= $unsortpct) and (stats_off IS NULL or stats_off >= $statsoffpct);" )
 	tables=$(echo $get_tables | sed "s/\([^ ]*\)/\'&\'/g"| sed 's/ /,/g')
 	else	
 	blacklisttables=$(echo $blacklisttables | sed "s/\([^,]*\)/\'&\'/g")	
-	get_tables=$(psql -h  $host -U $user -p $port -d $database -t -c"select \"table\" from svv_table_info where \"table\" not in ($blacklisttables) and \"schema\" in ($schema) and unsorted >= $unsortpct and  (stats_off IS NULL or stats_off >= $statsoffpct);" )
+	get_tables=$(psql -h  $host -U $user -p $port -d $database -t -c"select \"table\" from svv_table_info where \"table\" not in ($blacklisttables) and \"schema\" in ($schema) and (unsorted IS NULL or unsorted >= $unsortpct and  (stats_off IS NULL or stats_off >= $statsoffpct);" )
 	tables=$(echo $get_tables | sed "s/\([^ ]*\)/\'&\'/g"| sed 's/ /,/g')
 fi
 else
