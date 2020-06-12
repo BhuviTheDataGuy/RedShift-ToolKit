@@ -665,7 +665,7 @@ INSERT INTO rstk_metric_result
 SELECT 28, 
        'Performance', 
        'Max temp space used by queries', 
-       'https://thedataguy.in/rskit/tempspace', 
+       'https://thedataguy.in/rskit/diskquery', 
        Max(gigabytes) 
 FROM   (SELECT SUM(( bytes ) / 1024 / 1024 / 1024) AS GigaBytes 
         FROM   stl_query q 
