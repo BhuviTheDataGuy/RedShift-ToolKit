@@ -1,5 +1,5 @@
 -- RedShift HealthCheck ToolKit
--- Version 0.1
+-- Version 1.0
 -- Developed by Bhuvanesh (@bhuvithedataguy)
 -- Updates: https://thedataguy.in/
 
