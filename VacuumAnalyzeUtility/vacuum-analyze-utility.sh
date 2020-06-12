@@ -146,11 +146,11 @@ if [[ $tables == 'unset' ]]
 then
 	if [[ $blacklisttables == 'unset' ]]
 	then
-	analyze_get_tables=$(psql -h  $host -U $user -p $port -d $database -t -c"select \"table\" from svv_table_info where (stats_off IS NULL or stats_off > $statsoffpct) and \"schema\" in ($schema);" )
+	analyze_get_tables=$(psql -h  $host -U $user -p $port -d $database -t -c"select \"table\" from svv_table_info where stats_off>0 and stats_off > $statsoffpct and \"schema\" in ($schema);" )
 	analyze_tables=$(echo $analyze_get_tables | sed "s/\([^ ]*\)/\'&\'/g"| sed 's/ /,/g')
 	else	
 	blacklisttables=$(echo $blacklisttables | sed "s/\([^,]*\)/\'&\'/g")	
-	analyze_get_tables=$(psql -h  $host -U $user -p $port -d $database -t -c"select \"table\" from svv_table_info where \"table\" not in ($blacklisttables) and \"schema\" in ($schema) and (stats_off IS NULL or stats_off > $statsoffpct);" )
+	analyze_get_tables=$(psql -h  $host -U $user -p $port -d $database -t -c"select \"table\" from svv_table_info where \"table\" not in ($blacklisttables) and \"schema\" in ($schema) and stats_off>0 and stats_off > $statsoffpct;" )
 	analyze_tables=$(echo $analyze_get_tables | sed "s/\([^ ]*\)/\'&\'/g"| sed 's/ /,/g')
 
 fi
@@ -165,13 +165,12 @@ if [[ $tables == 'unset' ]]
 then
 	if [[ $blacklisttables == 'unset' ]]
 	then
-	get_tables=$(psql -h  $host -U $user -p $port -d $database -t -c"select \"table\" from svv_table_info where  \"schema\" in ($schema) and unsorted >= $unsortpct and stats_off >= $statsoffpct and vacuum_sort_benefit is not null;" )
+	get_tables=$(psql -h  $host -U $user -p $port -d $database -t -c"select \"table\" from svv_table_info where  \"schema\" in ($schema) and unsorted >= $unsortpct and (stats_off IS NULL or stats_off >= $statsoffpct);" )
 	tables=$(echo $get_tables | sed "s/\([^ ]*\)/\'&\'/g"| sed 's/ /,/g')
 	else	
 	blacklisttables=$(echo $blacklisttables | sed "s/\([^,]*\)/\'&\'/g")	
-	get_tables=$(psql -h  $host -U $user -p $port -d $database -t -c"select \"table\" from svv_table_info where \"table\" not in ($blacklisttables) and \"schema\" in ($schema) and unsorted >= $unsortpct and stats_off >= $statsoffpct and vacuum_sort_benefit is not null;" )
+	get_tables=$(psql -h  $host -U $user -p $port -d $database -t -c"select \"table\" from svv_table_info where \"table\" not in ($blacklisttables) and \"schema\" in ($schema) and unsorted >= $unsortpct and  (stats_off IS NULL or stats_off >= $statsoffpct);" )
 	tables=$(echo $get_tables | sed "s/\([^ ]*\)/\'&\'/g"| sed 's/ /,/g')
-
 fi
 else
 tables=$(echo $tables | sed "s/\([^,]*\)/\'&\'/g")
