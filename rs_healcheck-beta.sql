@@ -211,7 +211,7 @@ SELECT 8,
        'https://thedataguy.in/rskit/queue', 
        Count(*) 
 FROM   stv_wlm_service_class_config 
-WHERE  service_class >=6; 
+WHERE  service_class BETWEEN 6 and 13; 
 
 -- Auto WLM enabled
 INSERT INTO rstk_metric_result 
@@ -782,7 +782,7 @@ FROM   (SELECT checkid,
                  WHEN Cast(value AS INT) > 180 THEN ' Sometimes your cluster is spending more time on wait on the queue. The max wait time from last 7 days is ' 
                                                     || value 
                                                     || 
-               ' You have to tune your WLM to reduce the wait time.' 
+               ' seconds. You have to tune your WLM to reduce the wait time.' 
                  WHEN Cast(value AS INT) < 180 THEN 
 'We found that the wait time is less than 180  second ('||value||') which is Good. But still consider to tune WLM if need.'
 ELSE 'Unknown'
