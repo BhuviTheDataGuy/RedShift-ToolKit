@@ -129,6 +129,12 @@ WHERE  w.total_queue_time / 1000000 > 60;
 -- WLM max connection hit
 -- Credit: This query is taken from AWS RedShit Utilities with some changes to boost up performance on single node cluster.
 -- Script name: wlm_apex_hourly
+INSERT INTO rstk_metric_result 
+            (checkid, 
+             category, 
+             finding, 
+             url, 
+             value) 
 WITH generate_dt_series AS 
 ( 
        SELECT SYSDATE - (n * interval '1 minute') AS dt 
@@ -303,7 +309,7 @@ SELECT 13,
        count(*) 
         FROM   pg_catalog.svv_table_info 
         WHERE  table_id NOT IN (SELECT table_id 
-                                FROM   stl_vacuum)); 
+                                FROM   stl_vacuum); 
 
 -- Table vacuum older than 5 days
 INSERT INTO rstk_metric_result 
