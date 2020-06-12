@@ -5,7 +5,6 @@
 
 -- Drop the temp table for storing the checklist results
 DROP TABLE IF EXISTS rstk_metric_result;
-DROP TABLE IF EXISTS rstk_wlm_max_hit;
 
 -- Create temp table for storing the checklist results
 create temp table rstk_metric_result 
@@ -128,14 +127,14 @@ FROM   stl_wlm_query w
 WHERE  w.total_queue_time / 1000000 > 60; 
 
 -- WLM max connection hit
--- Credit: This query is taken from AWS RedShit Utilities
+-- Credit: This query is taken from AWS RedShit Utilities with some changes to boost up performance on single node cluster.
 -- Script name: wlm_apex_hourly
-CREATE temp TABLE rstk_wlm_max_hit AS (WITH generate_dt_series AS 
+WITH generate_dt_series AS 
 ( 
-       SELECT SYSDATE - (n * interval '1 second') AS dt 
+       SELECT SYSDATE - (n * interval '1 minute') AS dt 
        FROM   ( 
                      SELECT row_number() over () AS n 
-                     FROM   stl_scan limit 604800)), apex AS 
+                     FROM   stl_scan limit 10080)), apex AS 
 ( 
          SELECT   iq.dt, 
                   iq.service_class, 
@@ -169,40 +168,35 @@ CREATE temp TABLE rstk_wlm_max_hit AS (WITH generate_dt_series AS
          FROM     apex 
          GROUP BY apex.service_class, 
                   apex.dt, 
-                  date_part(h,apex.dt)) 
-SELECT   apex.service_class, 
-         apex.num_query_tasks AS max_wlm_concurrency, 
-         maxes.d              AS day, 
-         maxes.dt_h 
-                  || ':00 - ' 
-                  || maxes.dt_h 
-                  || ':59'             AS hour, 
-         max(apex.service_class_slots) AS max_service_class_slots 
-FROM     apex 
-join     maxes 
-ON       ( 
-                  apex.service_class = maxes.service_class 
-         AND      apex.service_class_slots = maxes.max_service_class_slots) 
-GROUP BY apex.service_class, 
-         apex.num_query_tasks, 
-         maxes.d, 
-         maxes.dt_h 
-ORDER BY apex.service_class, 
-         maxes.d, 
-         maxes.dt_h);
-INSERT INTO rstk_metric_result 
-            (checkid, 
-             category, 
-             finding, 
-             url, 
-             value) 
+                  date_part(h,apex.dt)) , final_result AS 
+( 
+         SELECT   apex.service_class, 
+                  apex.num_query_tasks AS max_wlm_concurrency, 
+                  maxes.d              AS day, 
+                  maxes.dt_h 
+                           || ':00 - ' 
+                           || maxes.dt_h 
+                           || ':59'             AS hour, 
+                  max(apex.service_class_slots) AS max_service_class_slots 
+         FROM     apex 
+         join     maxes 
+         ON       ( 
+                           apex.service_class = maxes.service_class 
+                  AND      apex.service_class_slots = maxes.max_service_class_slots) 
+         GROUP BY apex.service_class, 
+                  apex.num_query_tasks, 
+                  maxes.d, 
+                  maxes.dt_h 
+         ORDER BY apex.service_class, 
+                  maxes.d, 
+                  maxes.dt_h) 
 SELECT 7, 
        'WLM', 
        'WLM max connection hit', 
        'https://thedataguy.in/rskit/highconnection', 
-       Max(max_service_class_slots) AS maxv 
-FROM   rstk_wlm_max_hit 
-WHERE  service_class BETWEEN 6 AND 13;  
+       max(max_service_class_slots) AS maxv 
+FROM   final_result 
+WHERE  service_class >=6;
 
 -- Number of WLM queue
 INSERT INTO rstk_metric_result 
@@ -217,7 +211,7 @@ SELECT 8,
        'https://thedataguy.in/rskit/queue', 
        Count(*) 
 FROM   stv_wlm_service_class_config 
-WHERE  service_class BETWEEN 6 AND 13; 
+WHERE  service_class >=6; 
 
 -- Auto WLM enabled
 INSERT INTO rstk_metric_result 
@@ -279,7 +273,7 @@ WITH cte
      AS (SELECT perm_table_name, 
                 Max(rows_pre_filter - rows_pre_user_filter) AS "ghost_rows" 
          FROM   stl_scan 
-         WHERE  perm_table_name <> 'Internal Worktable' 
+         WHERE  perm_table_name not in ('Internal Worktable','S3') 
          GROUP  BY perm_table_name, 
                    rows_pre_filter, 
                    rows_pre_user_filter 
@@ -306,8 +300,7 @@ SELECT 13,
        'Vacuum', 
        'Tables never performed vacuum', 
        'https://thedataguy.in/rskit/vacuum', 
-       Count(*) 
-FROM   (SELECT "table" 
+       count(*) 
         FROM   pg_catalog.svv_table_info 
         WHERE  table_id NOT IN (SELECT table_id 
                                 FROM   stl_vacuum)); 
@@ -596,7 +589,7 @@ FROM   (SELECT Count(*) AS n_files
                AND transfer_time > 0 
         GROUP  BY query) 
 WHERE  n_files % (SELECT Count(slice) 
-                  FROM   stv_slices) = 0; 
+                  FROM   stv_slices) != 0; 
 
 -- High CPU queries (>80 Percent)
 INSERT INTO rstk_metric_result 
@@ -610,11 +603,18 @@ SELECT 25,
        'High CPU queries', 
        'https://thedataguy.in/rskit/highcpu', 
        Count(*) 
+FROM   (SELECT query, 
+       Max(query_cpu_usage_percent) cpu 
 FROM   svl_query_metrics 
 WHERE  query_execution_time > 60 
        AND query_cpu_usage_percent IS NOT NULL 
-       AND service_class BETWEEN 6 AND 13 
-       AND query_cpu_usage_percent > 80; 
+       AND (service_class BETWEEN 6 AND 13 or service_class >100) 
+       AND query_cpu_usage_percent > 80 
+       AND query NOT IN(SELECT query 
+                        FROM   stl_query 
+                        WHERE  querytxt NOT LIKE 'Vacuum' 
+                                OR querytxt NOT LIKE 'vacuum') 
+GROUP  BY query ); 
 
 -- Most frequent Alert (> 500 times)
 INSERT INTO rstk_metric_result 
