@@ -261,7 +261,7 @@ INSERT INTO rstk_metric_result
 SELECT 11, 
        'WLM', 
        'WLM commit queue wait', 
-       'https://thedataguy.in/rskit/queue', 
+       'https://thedataguy.in/rskit/commitqueue', 
        Max(queue_time) 
 FROM   (SELECT Datediff(seconds, startqueue, startwork) AS queue_time 
         FROM   stl_commit_stats 
