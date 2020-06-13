@@ -275,25 +275,41 @@ INSERT INTO rstk_metric_result
              finding, 
              url, 
              value) 
-WITH cte 
-     AS (SELECT perm_table_name, 
-                Max(rows_pre_filter - rows_pre_user_filter) AS "ghost_rows" 
-         FROM   stl_scan 
-         WHERE  perm_table_name not in ('Internal Worktable','S3') 
-         GROUP  BY perm_table_name, 
-                   rows_pre_filter, 
-                   rows_pre_user_filter 
-         ORDER  BY ghost_rows DESC) 
+WITH raw_gh AS 
+( 
+         SELECT   query, 
+                  tbl, 
+                  perm_table_name , 
+                  segment, 
+                  SUM(a.rows_pre_filter-a.rows_pre_user_filter)AS ghrows 
+         FROM     stl_scan a 
+         WHERE    a.starttime > current_timestamp - interval '5 days' 
+         and      perm_table_name NOT            IN ('Internal Worktable', 
+                                                     'S3') 
+         AND      is_rlf_scan = 'f' 
+         AND      ( 
+                           a.rows_pre_filter <> 0 
+                  AND      a.rows_pre_user_filter <> 0 ) 
+         GROUP BY SEGMENT, 
+                  query, 
+                  tbl, 
+                  perm_table_name ), ran AS 
+( 
+         SELECT   *, 
+                  dense_rank() over (PARTITION BY tbl ORDER BY query DESC, SEGMENT DESC) AS rnk
+         FROM     raw_gh ), final_cte AS 
+( 
+         SELECT   max(query), 
+                  SUM(ghrows)AS ghrows 
+         FROM     ran 
+         WHERE    rnk = 1 
+         GROUP BY tbl) 
 SELECT 12, 
        'Vacuum', 
        'Ghost rows', 
        'https://thedataguy.in/rskit/ghostrows', 
-       Count(*) 
-FROM   (SELECT perm_table_name, 
-               Max(ghost_rows) 
-        FROM   cte 
-        WHERE  ghost_rows > 0 
-        GROUP  BY perm_table_name); 
+       SUM(ghrows) 
+FROM   final_cte; 
 
 -- Tables never performed vacuum (based on STL_Vacuum)
 INSERT INTO rstk_metric_result 
