@@ -807,7 +807,7 @@ FROM   (SELECT checkid,
                ' seconds. You have to tune your WLM to reduce the wait time.' 
                  WHEN Cast(value AS INT) < 180 THEN 
 'We found that the wait time is less than 180  second ('||value||') which is Good. But still consider to tune WLM if need.'
-ELSE 'Unknown'
+ELSE 'Unknown -  - Your system tables may not have enough data'
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) > 900 THEN 1 
@@ -831,7 +831,7 @@ FROM   (SELECT checkid,
 ' as the high number of connections recently. RedShift support 500 as the max connection, so please tune your WLM setting to reduce the wait time and boost the queries.'
   WHEN Cast(value AS INT) < 100 THEN 
 'Great!!! This cluster never reach 100 connections (only '||value||') at any point of time, But to speed up concurrent queries in a queue, you may tune the WLM settings.'
-  ELSE 'Unknown' 
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) > 300 THEN 1 
@@ -859,7 +859,7 @@ FROM   (SELECT checkid,
                                               || 
 ' queues, not bad. But make sure it should to eat much resources. For a generic workload 2 to 3 queues will work fine.'
   WHEN Cast(value AS INT) =0 then 'You are using Auto WLM, so this check is not applicable'
-  ELSE 'Unknown' 
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT)= 1 THEN 1 
@@ -880,7 +880,7 @@ FROM   (SELECT checkid,
 ' You are using manual WLM, if you are aware about your workload and the manual WLM has more than 2 or 3 queues then may be it will fit. Or just give a try with Auto WLM and let RedShift decide to allocate the resource'
   WHEN Cast(value AS INT) > 0 THEN 
 'You have Auto WLM enbled, Good!!! still you are not convinced then switch to Manual WLM and tune the queues properly.'
-  ELSE 'Unknown' 
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) = 0 THEN 2 
@@ -909,7 +909,7 @@ FROM   (SELECT checkid,
                                     || 
 ' which is very less, it may allocate more resource per slot, but many sessions will go to waiting state iin the queue. Optimal value is 15 to 20'
   WHEN value IS NULL then 'You are using Auto WLM, so this check is not applicable'
-  ELSE 'Unknown' 
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) > 20 THEN 1 
@@ -939,7 +939,7 @@ FROM   (SELECT checkid,
   WHEN Cast(value AS INT) < 60 THEN 'Great!!! the commit wait was ' 
                                     || value 
                                     || ' seconds, this looks good' 
-  ELSE 'Unknown' 
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) > 120 THEN 1 
@@ -964,7 +964,7 @@ FROM   (SELECT checkid,
 ' Ghost rows(marked for delete), please run vacuum to remove them' 
   WHEN Cast(value AS INT) < 1000 THEN 
 'Awesome!!! You have less than 1K Ghost rows(only '||value||'), but frequently running vacuum will help you to clean up the Ghost rows.'
-  ELSE 'Unknown' 
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) > 100000 THEN 1 
@@ -986,7 +986,7 @@ FROM   (SELECT checkid,
   WHEN Cast(value AS INT)BETWEEN 1 AND 5 THEN 
 ' This cluster has '||value||' tables where vacuum never run(from STL_Vacuum result), Frequently running vacuum will make this count 0 and improve the overall process'
   WHEN Cast(value AS INT) = 0 THEN 'Good Job!!! all the tables are vacummed' 
-  ELSE 'Unknown' 
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) > 5 THEN 1 
@@ -1008,7 +1008,7 @@ FROM   (SELECT checkid,
   WHEN Cast(value AS INT)BETWEEN 5 AND 10 THEN 
 'You have less than 10 tables where vacuum did not perform from last 5 days, we found '||value||' tables, this is OK, but still frequently running vacuum will make this count 0 and improve the overall process'
   WHEN Cast(value AS INT) = 0 THEN 'Good Job!!! all the tables are vacummed' 
-  ELSE 'Unknown' 
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) > 10 THEN 1 
@@ -1030,7 +1030,7 @@ FROM   (SELECT checkid,
   WHEN Cast(value AS INT)BETWEEN 1 AND 5 THEN 
 ' There are '||value||' tables where Tombstone blocks are there, Frequently running vacuum will make this count 0 and improve the overall process'
   WHEN Cast(value AS INT) = 0 THEN 'Good Job!!! No Tombstone blocks found' 
-  ELSE 'Unknown' 
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) > 5 THEN 1 
@@ -1055,7 +1055,7 @@ FROM   (SELECT checkid,
 'We found '||value||' tables with missing statistics, it is a less numer. But please run Analyze to update the statistics'
   WHEN Cast(value AS INT) = 0 THEN 
   'Awesome!!! All the tables statistics are upto date' 
-  ELSE 'Unknown' 
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) > 5 THEN 1 
@@ -1080,7 +1080,7 @@ FROM   (SELECT checkid,
 'You have '||value||'  tables with stale statistics (less than 5 percent), Please run Analyze to update the statistics'
   WHEN Cast(value AS INT) = 0 THEN 
   'Awesome!!! All the tables statistics are upto date' 
-  ELSE 'Unknown' 
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) > 5 THEN 1 
@@ -1103,7 +1103,7 @@ FROM   (SELECT checkid,
 ' You have '||value||' tables where the total size of those tables are greter than 40% of the total cluster size. Please consider to use RedShift Spectrum is possible'
   WHEN Cast(value AS INT) = 0 THEN 
 'Nice!!! All the tables are having less than 40% of the usgae from the total size' 
-  ELSE 'Unknown' 
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) > 2 THEN 1 
@@ -1126,7 +1126,7 @@ FROM   (SELECT checkid,
 ' tables that has more than 3 alerts. Please visit stl_alert_event_log table to find those alerts'
   WHEN Cast(value AS INT) BETWEEN 0 AND 5 THEN 
   'Nice!!! Your tables does not have much alerts.' 
-  ELSE 'Unknown' 
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) > 5 THEN 1 
@@ -1148,7 +1148,7 @@ FROM   (SELECT checkid,
                                                   || 
 ' tables never scanned(from STL_SCAN results), Please take a look at these tables, if not required then remove them or move to Specturm'
   WHEN Cast(value AS INT) = 0 THEN 'Nice!!! All the tables are active' 
-  ELSE 'Unknown' 
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) > 5 THEN 1 
@@ -1173,7 +1173,7 @@ FROM   (SELECT checkid,
                                    || value 
                                    || 
 ' tables with NoBackup flag, This looks fine' 
-  ELSE 'Unknown' 
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) > 0 THEN 1 
@@ -1195,7 +1195,7 @@ FROM   (SELECT checkid,
 ' tables with Fragmentation, Please run vacuum to defrag the tables' 
   WHEN Cast(value AS INT) = 0 THEN 
   'Great!!! We did not find any tables with fragmentation' 
-  ELSE 'Unknown' 
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) > 5 THEN 1 
@@ -1221,8 +1221,8 @@ FROM   (SELECT checkid,
                                                    || 
 ' disk based queries, Its a less count, but Disk based queries can spill your disk too quickly and gives bad performance. WLM setting can also help you to fix this'
   WHEN Cast(value AS INT) between 1 and 300 THEN 'Not much disk based quries. You have '||value||' quries only' 
-  WHEN Cast(value AS INT) then 'Awesome!!! No disk based quries'
-  ELSE 'Unknown' 
+  WHEN Cast(value AS INT) = 0 then 'Awesome!!! No disk based quries'
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) > 500 THEN 1 
@@ -1248,7 +1248,7 @@ FROM   (SELECT checkid,
                                                || 
 ' times without having the correct number for files. Its a less number. Generally  the number of files is a multiple of the number of slices in your cluster'
   WHEN Cast(value AS INT) = 0 THEN 'Awesome!!! You files are properlly sized' 
-  ELSE 'Unknown' 
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) > 5 THEN 1 
@@ -1275,7 +1275,7 @@ FROM   (SELECT checkid,
 ' queries consumed more than 80% of the CPU. This is OK.' 
   WHEN Cast(value AS INT) < 5 THEN 
   'Awesome!!! You do not have much High CPU consuming queries.' 
-  ELSE 'Unknown' 
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) > 10 THEN 1 
@@ -1331,7 +1331,7 @@ FROM   (SELECT checkid,
 ' queries that runs from 1Hr to 2Hrs, lease take a look and tune those queries.' 
   WHEN Cast(value AS INT) < 30 THEN 
   'Awesome!!! All of your queries are completed within 30mins' 
-  ELSE 'Unknown' 
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) > 300 THEN 1 
@@ -1359,7 +1359,7 @@ FROM   (SELECT checkid,
 ' GB of disk space to store the intermediate results. This may lead to spill the disk too quickly.'
   WHEN Cast(value AS INT) < 5 THEN 
 'Your queries never consumed more than 5Gb to store intermediate results. This seems OK.' 
-  ELSE 'Unknown' 
+  ELSE 'Unknown -  - Your system tables may not have enough data' 
 END AS details, 
 CASE 
   WHEN Cast(value AS INT) > 10 THEN 1 
