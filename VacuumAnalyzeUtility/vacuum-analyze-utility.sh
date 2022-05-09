@@ -249,7 +249,7 @@ else
 # If user set 1 vacuum then start vaccum
 if [[ $vacuum == 1 ]] 
 then
-generate_vacuum_query=$(psql -h $host -U $user -p $port -d $database -t -c"select 'vacuum $vacuumoption '||\"schema\"||'.'||\"table\"||'  to $vacuumpercent percent;' from svv_table_info where \"schema\" in ($schema) and \"table\" in ($tables)";)
+generate_vacuum_query=$(psql -h $host -U $user -p $port -d $database -t -c"select 'vacuum $vacuumoption '||\"schema\"||'.'||\"table\"||';' from svv_table_info where \"schema\" in ($schema) and \"table\" in ($tables)";)
 if [ $dryrun == 1 ]
 then
 echo ""
